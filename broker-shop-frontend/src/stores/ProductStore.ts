@@ -33,6 +33,7 @@ class ProductStore {
     @observable priceToBound: number = 1000000
     @observable quantityFromBound: number = 0
     @observable quantityToBound: number = 1000000
+    @observable searchTitle: string | '' = ''
     // цельная строка - значение url-параметра search
     @observable searchString: string = ''
 
@@ -52,8 +53,10 @@ class ProductStore {
                             price<:${this.priceTo};
                             quantity>:${this.quantityFrom};
                             quantity<:${this.quantityTo}
+                            ${(this.searchTitle && this.searchTitle.length > 0) ? ';title:' + this.searchTitle : ''}
                             ${(this.categories && this.categories.length > 0) ? ';category:' + JSON.stringify(this.categories) : ''}`
                 .replace(/\s/g, '')
+
         })
     }
 
@@ -288,6 +291,29 @@ class ProductStore {
         }))
     }
 
+    @action fetchProductTitle() {
+        commonStore.clearError()
+        commonStore.setLoading(true)
+        fetch(commonStore.basename + '/products/title')
+            .then((response) => {
+                return response.json()
+            }).then(responseModel => {
+            if (responseModel) {
+                if (responseModel.status === 'success') {
+                    this.searchTitle = responseModel.data.title
+                    this.changeShoppingUrlParams()
+                } else if (responseModel.status === 'fail') {
+                    commonStore.setError(responseModel.message)
+                }
+            }
+        }).catch((error) => {
+            commonStore.setError(error.message)
+            throw error
+        }).finally(action(() => {
+            commonStore.setLoading(false)
+        }))
+    }
+
     // вызываемый явно метод, когда изменилась адресная строка -
     // получение с сервера списка товаров согласно состояния фильтра
     @action getFilteredProducts () {
@@ -302,6 +328,7 @@ class ProductStore {
                         /?search=
                             price>:${this.priceFrom};
                             price<:${this.priceTo}
+                            ${(this.searchTitle && this.searchTitle.length > 0) ? ';title:' + this.searchTitle : ''}
                             ${(this.categories && this.categories.length > 0) ? ';category:' + JSON.stringify(this.categories) : ''}`
         // перед запросом на сервер удаляем все пробельные символы из адреса,
         // потому что описанный выше блок кода добавляет их для форматирования
@@ -432,6 +459,19 @@ class ProductStore {
         this.quantityTo = quantityTo
         this.handleQuantityBoundsValues()
     }
+
+    @action setFilterDataSearchTitle(searchTitle: string){
+        this.searchTitle = searchTitle
+        //this.handleSearchTitle()
+        this.changeShoppingUrlParams()
+    }
+/*
+    private handleSearchTitle () {
+        setTimeout(() => {
+            this.fetchProductTitle()
+        }, 3500)
+    }
+ */
 
     // если поля границ цены состояния фильтра пустуют -
     // предоставить пользователю три секунды на ввод этих данных,

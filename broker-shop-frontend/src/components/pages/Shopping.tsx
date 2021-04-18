@@ -76,6 +76,20 @@ const styles = (theme: Theme) =>
         },
         active: {
             backgroundColor: '#ccc'
+        },
+        searchLine:{
+            [theme.breakpoints.down("xs")]: {
+                justifyContent:'flex-end'
+            },
+            marginBottom:20,
+            justifyContent:'center',
+            display:'flex'
+        },
+        searchTextField:{
+            [theme.breakpoints.down("xs")]: {
+                maxWidth:150
+            },
+            maxWidth:300
         }
     })
 
@@ -196,6 +210,10 @@ class Shopping extends Component<IProps, IState> {
         this.injected.productStore.setFilterDataQuantityTo(Number(e.target.value))
     }
 
+    handleSearchTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        this.injected.productStore.setFilterDataSearchTitle(String(e.target.value))
+    }
+
     // обработчик выбора кнопки направления сортировки или поля сортировки
     handleOrderButtonClick = (e: React.MouseEvent, orderBy: string, sortingDirection: string, buttonName: string) => {
         this.injected.productStore.setOrderBy(orderBy)
@@ -224,16 +242,27 @@ class Shopping extends Component<IProps, IState> {
         const { classes } = this.injected
         return (
             <div>
-                {/* drawer toggle button */}
-                <Button
-                    variant='outlined'
-                    disabled={loading}
-                    className={classes.filterButton}
-                    onClick={this.handleTogglePanelButton}
-                >
-                    Filter
-                    <FilterIcon/>
-                </Button>
+                    {/* drawer toggle button */}
+                    <Button
+                        variant='outlined'
+                        disabled={loading}
+                        className={classes.filterButton}
+                        onClick={this.handleTogglePanelButton}
+                    >
+                        Filter
+                        <FilterIcon/>
+                    </Button>
+                    <div className={classes.searchLine}
+                    >
+                        <TextField
+                            className={classes.searchTextField}
+                            label={'Search'}
+                            id="searchTitle"
+                            value={this.injected.productStore.searchTitle}
+                            onChange={this.handleSearchTitleChange}
+                        >
+                        </TextField>
+                    </div>
                 {/* drawer */}
                 <Drawer
                     open={ this.state.sidePanelVisibility }
